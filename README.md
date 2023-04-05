@@ -151,5 +151,5 @@ Periksa status container
 ```bash
 docker-compose logs
 ```
-Lakukan [pengujian menggunakan postman](#Testing) seperti sebelumnya.
+Lakukan [pengujian menggunakan postman](##-pengujian-menggunakan-postman) seperti sebelumnya.
 ## Jalankan aplikasi menggunakan `kubernetes`
