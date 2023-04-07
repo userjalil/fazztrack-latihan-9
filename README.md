@@ -170,9 +170,9 @@ Tidak seperti docker compose dimana data username dan password yang sifatnya rah
 
 Data username dan password yang dituliskan didalam object secret sudah dalam bentuk encode base64. 
 ```bash
-$ echo -n "jalil" | base64
+echo -n "jalil" | base64
 amFsaWw=
-$ echo -n "devops" | base64
+echo -n "devops" | base64
 ZGV2b3Bz
 ```
 
