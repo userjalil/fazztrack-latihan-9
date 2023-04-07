@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-express-3
+  labels:
+    app: express-3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: express-3
+  template:
+    metadata:
+      labels:
+        app: express-3
+    spec:
+      containers:
+        - name: express-3
+          image: userjalil/fazztrack-express-3:1.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: username
+              valueFrom:
+                secretKeyRef:
+                  name: psql-secret
+                  key: psql-username
+            - name: password
+              valueFrom:
+                secretKeyRef:
+                  name: psql-secret
+                  key: psql-password
+            - name: DB_HOST
+              value: psql-service
+          command:
+            [
+              "/bin/sh",
+              "-c",
+              "npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && npm run dev",
+            ]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-3-service
+  labels:
+    app: express-3
+spec:
+  selector:
+    app: express-3
+  type: LoadBalancer
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30001

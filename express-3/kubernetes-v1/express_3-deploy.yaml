@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-3
+  labels:
+    app: express-3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: express-3
+  template:
+    metadata:
+      labels:
+        app: express-3
+    spec:
+      containers:
+        - name: express-3
+          image: userjalil/express-fazztrack-3:1.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: psql-configmap
+                  key: node_env
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: psql-configmap
+                  key: db_host
+          command:
+            [
+              "/bin/sh",
+              "-c",
+              "npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && npm run dev",
+            ]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fazztrack-3-service
+spec:
+  selector:
+    app: express-3
+  type: LoadBalancer
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30001

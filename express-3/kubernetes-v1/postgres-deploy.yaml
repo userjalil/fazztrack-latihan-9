@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dbpsql
+  labels:
+    app: dbpsql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dbpsql
+  template:
+    metadata:
+      labels:
+        app: dbpsql
+    spec:
+      containers:
+        - name: dbpsql
+          image: postgres:14-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: express_fazztrack_3
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: psql-secret
+                  key: psql-username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: psql-secret
+                  key: psql-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: psql-service
+spec:
+  selector:
+    app: dbpsql
+  ports:
+    - port: 5432
+      targetPort: 5432
