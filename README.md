@@ -6,41 +6,55 @@ Source code menggunakan express-fazztrack-3
 
 
 
+## Jalankan aplikasi secara lokal
 
-## Build Docker Image
-Buat direktori `app` lalu pindahkan source code aplikasi kedalam direktori tersebut
+Clone source express-fazztrack-3
 ```bash
-mkdir app
-mv * app/
+git clone https://gitlab.com/ebyantoo/express-fazztrack-3
 ```
 
-Buat file baru dengan nama `Dockerfile`
-```
-FROM node:18-alpine
-EXPOSE 3000
-WORKDIR /app
-ADD /app/package*.json ./
-RUN npm install
-ADD app/. ./
+Masuk ke direktori proyek
+```bash
+cd express-fazztrack-3
+````
+
+Install dependencies
+```bash
+npm install
 ```
 
-Ubah nilai variabel `"host"` pada file `config/config.json` menjadi `psql-service`. Variabel ini nantinya akan digunakan ketika membuat file konfigurasi docker-compose, jadi container untuk database postgreSQL akan menggunakan nama ini agar container express dapat berkomunikasi dengan container postgreSQL.
+Edit file config/config.json untuk koneksi database, sebagai percobaan cukup menggunakan environment development
 ```javascript
 "development": {
   "username": "jalil",
   "password": "devops",
   "database": "express_fazztrack_3",
-  "host": "psql-service",
+  "host": "127.0.0.1",
   "dialect": "postgres"
 }
 ```
 
-Buat image Docker dengan format `<username docker hub>/<nama image>:<versi>` agar memudahkan ketika melakukan upload ke docker hub
+Buat user dan database PostgreSQL sekaligus memberikan hak akses terhadap database
 ```bash
-docker build -t userjalil/express-fazztrack-3:1.0 . 
+postgres=# create role jalil login password 'devops';
+postgres=# create database express_fazztrack_3 with owner=jalil;
+postgres=# GRANT ALL PRIVILEGES ON DATABASE express_fazztrack_3 TO jalil;
 ```
 
+Buat tabel pada database
+```bash
+npx sequelize-cli db:migrate
+```
 
+Tambah contoh data ke tabel user
+```bash
+npx sequelize-cli db:seed:all
+```
+
+Jalankan aplikasi
+```bash
+npm run dev
+```
 ## Pengujian menggunakan Postman 
 
 Pengujian yang dilakukan yaitu tambah data, tampilkan data, ubah data dan menghapus data
@@ -94,7 +108,7 @@ Ubah nilai variabel `"host"` pada file `config/config.json` menjadi `psql-servic
 
 Buat image Docker dengan format `<username docker hub>/<nama image>:<versi>` agar memudahkan ketika melakukan upload ke docker hub
 ```bash
-docker build -t userjalil/express-fazztrack-3:1.0 . 
+docker build -t userjalil/fazztrack-express-3:1.0 . 
 ```
 
 
@@ -112,7 +126,7 @@ services:
       POSTGRES_DB: express_fazztrack_3
 
   express-3:
-    image: userjalil/express-fazztrack-3:1.0
+    image: userjalil/fazztrack-express-3:1.0
     depends_on:
       - psql-service
     ports:
@@ -154,7 +168,7 @@ Login Succeeded
 
 Jalankan perintah `docker push <nama image>/<versi>`
 ```bash
-docker push userjalil/express-fazztrack-3:1.0
+docker push userjalil/fazztrack-express-3:1.0
 ```
 
 ![docker push](https://github.com/userjalil/fazztrack-latihan-9/blob/main/screenshot_express_3/Screenshot_3.png?raw=true)
@@ -170,14 +184,15 @@ Tidak seperti docker compose dimana data username dan password yang sifatnya rah
 
 Data username dan password yang dituliskan didalam object secret sudah dalam bentuk encode base64. 
 ```bash
-echo -n "jalil" | base64
+$ echo -n "jalil" | base64
 amFsaWw=
-echo -n "devops" | base64
+$ echo -n "devops" | base64
 ZGV2b3Bz
 ```
 
 Buat file baru dengan nama `secret.yaml`
 ```yaml
+apiVersion: v1
 apiVersion: v1
 kind: Secret
 metadata:
