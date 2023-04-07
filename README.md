@@ -179,7 +179,6 @@ ZGV2b3Bz
 Buat file baru dengan nama `secret.yaml`
 ```yaml
 apiVersion: v1
-apiVersion: v1
 kind: Secret
 metadata:
   name: psql-secret
